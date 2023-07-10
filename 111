@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Notification
+metadata:
+  name: app-sync-status
+spec:
+  group: notifications.argoproj.io
+  version: v1alpha1
+  destination:
+    xMatters:
+      url: https://your-xmatters-instance.com/api/integration/1/functions/your-function-name/triggers?apiKey=your-api-key
+      contentType: application/json
+      method: POST
+      bodyTemplate: |
+        {
+          "properties": {
+            "application": "{{.ApplicationName}}",
+            "namespace": "{{.Namespace}}",
+            "status": "{{.Status}}",
+            "operation": "{{.Operation}}",
+            "sync-status": "{{.SyncStatus}}",
+            "url": "{{.URL}}"
+          }
+        }
+  triggers:
+    - name: app-sync-status-trigger
+      onSyncStatus:
+        - Unknown
