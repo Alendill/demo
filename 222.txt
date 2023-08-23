@@ -1,1 +1,2 @@
 https://medium.com/@harsh.manvar111/wild-card-certificate-using-cert-manager-in-kubernetes-3406b042d5a2
+https://github.com/hashicorp/packer/issues/11733?ssp=1&setlang=zh-HK&safesearch=moderate
