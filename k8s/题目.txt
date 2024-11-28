@@ -1,0 +1,17 @@
+1，etcd备份
+2，k8s 升级
+3，rbac
+4，networkP
+5，pod多容器
+6，pod最高cpu统计
+7，pod的log统计
+8，service暴漏端口
+9，ingress部署
+10，边车容器部署
+11，统计不可用node
+12，kubelet不可用重启
+13，deployment扩容
+14，pv创建
+15，pvc 创建，绑定pod
+16，nodeselector
+17，节点维护

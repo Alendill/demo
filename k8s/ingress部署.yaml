@@ -1,0 +1,23 @@
+#ingress部署
+
+#https://kubernetes.io/zh-cn/docs/concepts/services-networking/ingress/
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pong
+  ingressClassName: nginx-example
+  rules:
+  - http:
+      paths:
+      - path: /hi
+        pathType: Prefix
+        backend:
+          service:
+            name: hi
+            port:
+              number: 5678
+
+kubectl applay -f xx.yaml
+
+curl http://zhujin:5678/hi

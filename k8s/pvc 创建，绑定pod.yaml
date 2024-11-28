@@ -1,0 +1,35 @@
+#pvc 创建，绑定pod
+
+#https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-persistent-volume-storage/
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pv-volume
+spec:
+  storageClassName: csi-hostpath-sc
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-server
+spec:
+  volumes:
+    - name: pv-volume
+      persistentVolumeClaim:
+        claimName: pv-volume
+  containers:
+    - name: task-pv-container
+      image: nginx
+      volumeMounts:
+        - mountPath: "/usr/share/nginx/html"
+          name: pv-volume
+
+
+kubectl edit pvc pv-volume   storage: 70Mi

@@ -1,0 +1,8 @@
+#deployment扩容
+
+1.中方法  edit
+
+kubectl edit  pod 
+
+replaic=6
+

@@ -1,0 +1,9 @@
+#统计不可用node
+
+#https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/taint-and-toleration/
+
+kubectl get nodes 
+
+kubectl describe nodes |grep -i NoSchedule
+
+#两个数 相减

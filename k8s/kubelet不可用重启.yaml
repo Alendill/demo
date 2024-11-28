@@ -1,0 +1,14 @@
+#kubelet不可用重启
+
+
+kubectl get nodes 
+
+ssh node-name 
+
+systemctl status kubelet
+systemctl start kubelet
+
+
+systemctl enable kubelet
+
+exec

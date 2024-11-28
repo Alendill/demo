@@ -1,0 +1,9 @@
+#节点维护
+
+
+#停止调度，驱逐pod
+kubectl cordon <node-to-uncordon>
+kubectl drain <node-to-drain> --ignore-daemonsets 
+
+#完毕再恢复调度
+kubectl uncordon <node-to-uncordon>

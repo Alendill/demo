@@ -1,0 +1,21 @@
+#pv创建
+
+#https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-persistent-volume-storage/#create-a-persistentvolume
+
+#配置pod是用pv
+
+
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: app-config
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/srv/app-config"

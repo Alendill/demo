@@ -1,0 +1,51 @@
+#边车容器部署
+
+
+#搜索日志架构
+#https://kubernetes.io/zh-cn/docs/concepts/cluster-administration/logging/
+
+
+kubectl get pod legacy-app -o yaml > bianche.yaml
+
+
+#参照：
+apiVersion: v1
+kind: Pod
+metadata:
+  name: counter
+spec:
+  containers:
+  - name: count
+    image: busybox:1.28
+    args:
+    - /bin/sh
+    - -c
+    - >
+      i=0;
+      while true;
+      do
+        echo "$i: $(date)" >> /var/log/1.log;
+        echo "$(date) INFO $i" >> /var/log/2.log;
+        i=$((i+1));
+        sleep 1;
+      done      
+    volumeMounts:
+    - name: log
+      mountPath: /var/log
+  - name: count-log-1
+    image: busybox:1.28
+    args: [/bin/sh, -c, 'tail -n+1 -F /var/log/1.log']
+    volumeMounts:
+    - name: log
+      mountPath: /var/log
+  - name: busybox
+    image: busybox:1.28
+    args: [/bin/sh, -c, 'tail -n+1 -f /var/log/legacy-app.log']
+    volumeMounts:
+    - name: log
+      mountPath: /var/log
+  volumes:
+  - name: log
+    emptyDir: {}
+
+kubectl applay -f xx.yaml

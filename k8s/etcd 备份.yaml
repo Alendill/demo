@@ -1,0 +1,30 @@
+#etcd 备份
+
+#官方文档 
+#https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/configure-upgrade-etcd/
+
+#进行备份
+
+export ETCDCTL_API=3
+
+ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379 \
+  --cacert=<trusted-ca-file> --cert=<cert-file> --key=<key-file> \
+  snapshot save <backup-file-location>
+
+#恢复
+
+#备份原始文件
+mkdir /opt/backup -p
+mv /etc/k8s/mainf/* /opt/backup
+
+#删除一pod，恢复后进行检查
+kubectl delete pod
+
+etcdctl  --endpoints=https://127.0.0.1:2379 \
+--cacert=<trusted-ca-file> --cert=<cert-file> --key=<key-file> --data-dir <data-dir-location> snapshot restore /var/lib/snapshot.db
+
+systemctl status kubelet
+systemctl start kubelet
+
+#检查
+kubectl get pod

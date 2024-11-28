@@ -1,0 +1,20 @@
+#pod多容器
+
+#https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-memory-resource/
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: multi-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+  - name: redis
+    image: redis
+  - name: memcached
+    image: memcached
+  - name: consult
+    image: consult
+
+kubectl applay -f xx.yaml

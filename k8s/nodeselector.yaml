@@ -1,0 +1,19 @@
+#nodeselector
+ 
+
+#https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-pods-nodes/
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    env: test
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    imagePullPolicy: IfNotPresent
+  nodeSelector:
+    disktype: ssd

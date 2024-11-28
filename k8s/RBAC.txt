@@ -1,0 +1,40 @@
+#RBAC
+
+#https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/
+
+##创建一个名为deployment-clusterrole的clusterrole，该clusterrole只允许创建Deployment、Daemonset、Statefulset的create操作；在名字为app-team1的namespace下创建一个名为cicd-token的serviceAccount，并且将上一步创建clusterrole的权限绑定到该serviceAccount，要求仅在app-team1起作用
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: deployment-clusterrole
+rules:
+- apiGroups: [""]
+  # 在 HTTP 层面，用来访问 Secret 资源的名称为 "secrets"
+  resources: ['Deployment'、'Daemonset'、'Statefulset']
+  verbs: ["create"]
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cicd-token
+  namespace: app-team1
+---
+apiVersion: rbac.authorization.k8s.io/v1
+# 此角色绑定允许 "jane" 读取 "default" 名字空间中的 Pod
+# 你需要在该名字空间中有一个名为 “pod-reader” 的 Role
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: app-team1
+subjects:
+# 你可以指定不止一个“subject（主体）”
+- kind: ServiceAccount
+  name: cicd-token # "name" 是区分大小写的
+  namespace: app-team1
+roleRef:
+  # "roleRef" 指定与某 Role 或 ClusterRole 的绑定关系
+  kind: ClusterRole        # 此字段必须是 Role 或 ClusterRole
+  name: deployment-clusterrole  # 此字段必须与你要绑定的 Role 或 ClusterRole 的名称匹配
+  apiGroup: rbac.authorization.k8s.io
