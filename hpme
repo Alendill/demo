@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Home</title>
+    <title>Dashboard</title>
 </head>
 <body>
-    <h1>Welcome to the GitHub OAuth2 Demo!</h1>
-    <a href="/oauth2/authorization/github">Login with GitHub</a>
+    <h1>Welcome, ${name}!</h1>
+    <img src="${avatar_url}" alt="Avatar" width="100">
+    <p><a href="/logout">Logout</a></p>
 </body>
 </html>
