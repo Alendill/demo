@@ -1,0 +1,31 @@
+Thank you, Roger.
+
+5页：
+In order to further simplify the skill cost of using Jenkins, we decided to make the old version of containerCI pipeline and the new pipeline integrated with ICE into 4 templates. Through a simpler project onboard pipeline, the templates are copied to the automatically generated project directory. At the same time, two Jenkins RBAC groups are added to the project. One group is the Approver group, which is used to review the metadata of the Docker image, and the other group is the Developer, which minimizes the permission control and prevents users from editing the CI process privately. Next is the deno of this auto onboard pipeline. You only need to enter the following four parameters in this interface.
+
+【demo演示】
+【demo演示完，讲解模板】
+The first ICE template is to automatically update the ICE API token through a scheduled task
+The second ICE template is to use pipeline to create ICE credentials
+The third ICE template is to complete ICE data filling through pipeline and ICE integration
+The fourth template is our upgraded container CI pipeline template
+【转6页】
+
+6页：
+The above picture shows the entire process of our new CICD. The yellow part is the CI stage, which completes the packaging of the code and all scans that meet the HSBC Cyber ​​security standards. If any critical or high level CVE is scanned, the entire pipeline will be terminated. If no critical or high level CVE is scanned, we will put the basic data of the code and all scan results into the metadata of the newly generated Docker image, and upload the new image to the dev repository of nexus3. The orange part in the middle is the CD stage, we will call the rest api of ArgoCD to automatically deploy the newly generated Docker image to the non-prod environment, and add a tag to the metadata of the Docker image after deployment to indicate whether it is deployed in the non-prod environment. The green part is that if the image passes the user's review and approval, the Docker image will be promoted to the prod repository of nexus3 for release.
+【转CICD pipeline的参数讲解】
+
+7页：
+Next, in the Data
+consistency phase, we will collect data from each step in CI and CD and put it into the image's matedata, as shown in the picture, such as various security scan data, image version data, whether it has been deployed in non-prod, etc.
+Why do we need this data?
+1. This data accompanies an image throughout its life cycle
+2. Consistency, you can clearly see the value of each indicator
+3. Users will use this data for strict review and judgment
+In this way, we can ensure that every dogker image to be released is safe, traceable, and reviewed.
+
+8页：
+This section shows the image promotion check list. After a docker image has been deployed in Dev, we no longer need to rebuild another docker image to the prod repository of nexus3. Instead, we can promote this docker image from the nexus3 non-prod repository to the prod repository of nexus3 in a safer and more convenient way, that is, to execute the promotion pipeline. As shown in the figure, we will list the content that needs to be reviewed. After the reviewer ensures that everything is correct, he clicks the approve button. This docker image will be promoted to the prod repository of nexus3.
+
+
+OK, that's all for me. I'll hand it back to Roger.
