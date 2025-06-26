@@ -1,0 +1,165 @@
+要通过 Jenkins API 创建和修改 Secret File 凭据，需遵循以下步骤。Secret File 凭据用于存储二进制或文本文件（如密钥文件、证书等）。
+
+---
+
+### 一、前置条件
+1. **Jenkins 环境**：
+   - 确保 Jenkins 已安装 [Credentials Binding Plugin](https://plugins.jenkins.io/credentials-binding/)。
+   - 获取 Jenkins 用户的 API Token（路径：`用户设置 > API Token`）。
+   - 启用 Jenkins 的 CSRF 保护（需获取 Crumb）。
+
+2. **身份验证**：
+   - 使用 `用户名:API Token` 进行 [Basic Auth](https://en.wikipedia.org/wiki/Basic_access_authentication)。
+   - 获取 Crumb（用于 CSRF 保护）：
+     ```bash
+     JENKINS_URL="http://your-jenkins-url"
+     USER="your-username"
+     API_TOKEN="your-api-token"
+     CRUMB=$(curl -u "$USER:$API_TOKEN" "$JENKINS_URL/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)")
+     ```
+
+---
+
+### 二、创建 Secret File 凭据
+#### API 端点
+```
+POST /credentials/store/system/domain/_/createCredentials
+```
+
+#### 请求示例
+```bash
+curl -X POST \
+  -u "$USER:$API_TOKEN" \
+  -H "$CRUMB" \
+  -H "Content-Type: application/xml" \
+  -d @secret-file.xml \
+  "$JENKINS_URL/credentials/store/system/domain/_/createCredentials"
+```
+
+#### XML 数据 (`secret-file.xml`)
+```xml
+<com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+  <scope>GLOBAL</scope>
+  <id>my-secret-file-id</id> <!-- 唯一ID -->
+  <description>Secret File for Authentication</description>
+  <filepath>secret-key.pem</filepath> <!-- 文件在Jenkins中的存储路径 -->
+  <secretBytes>BASE64_ENCODED_FILE_CONTENT</secretBytes> <!-- 文件内容的Base64编码 -->
+</com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+```
+
+#### 生成 Base64 编码：
+```bash
+# Linux/MacOS
+BASE64_CONTENT=$(base64 -w0 /path/to/your/file)
+
+# Windows (PowerShell)
+$base64Content = [Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\path\to\file"))
+```
+
+---
+
+### 三、修改 Secret File 凭据
+#### API 端点
+```
+POST /credentials/store/system/domain/_/credential/CREDENTIAL_ID/updateSubmit
+```
+替换 `CREDENTIAL_ID` 为目标凭据的 ID（如 `my-secret-file-id`）。
+
+#### 请求示例
+```bash
+curl -X POST \
+  -u "$USER:$API_TOKEN" \
+  -H "$CRUMB" \
+  -H "Content-Type: application/xml" \
+  -d @updated-secret-file.xml \
+  "$JENKINS_URL/credentials/store/system/domain/_/credential/my-secret-file-id/updateSubmit"
+```
+
+#### XML 数据 (`updated-secret-file.xml`)
+```xml
+<com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+  <scope>GLOBAL</scope>
+  <id>my-secret-file-id</id> <!-- 必须与原ID一致 -->
+  <description>Updated Secret File</description>
+  <filepath>new-secret-key.pem</filepath>
+  <secretBytes>NEW_BASE64_ENCODED_CONTENT</secretBytes>
+</com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+```
+
+---
+
+### 四、关键注意事项
+1. **凭据类型**：
+   - 类名必须是 `com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl`（实际存储文件）。
+   - 使用 `secretBytes` 字段传递 Base64 编码的文件内容。
+
+2. **文件路径**：
+   - `filepath` 是文件在 Jenkins 节点上的存储路径（如 `secret.pem`）。
+
+3. **错误处理**：
+   - 若返回 `403 Forbidden`，检查 CSRF Crumb 或权限。
+   - 若返回 `404`，检查 Credentials ID 或端点 URL。
+   - 若返回 `400`，检查 XML 格式是否正确。
+
+4. **查看凭据**：
+   - 在 Jenkins 控制台查看路径：`Manage Jenkins > Credentials > System > Global credentials`。
+
+---
+
+### 五、完整流程示例
+#### 创建凭据
+```bash
+# 1. 获取 Crumb
+CRUMB=$(curl -s -u "admin:11abc22d33ef44gh55ij" "http://jenkins.example.com/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)")
+
+# 2. 生成 Base64 文件内容
+BASE64_CONTENT=$(base64 -w0 /tmp/secret.key)
+
+# 3. 生成 XML 文件
+cat > secret-file.xml <<EOF
+<com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+  <scope>GLOBAL</scope>
+  <id>prod-ssl-key</id>
+  <description>SSL Key for Production</description>
+  <filepath>ssl_prod.key</filepath>
+  <secretBytes>$BASE64_CONTENT</secretBytes>
+</com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+EOF
+
+# 4. 调用 API
+curl -X POST \
+  -u "admin:11abc22d33ef44gh55ij" \
+  -H "$CRUMB" \
+  -H "Content-Type: application/xml" \
+  -d @secret-file.xml \
+  "http://jenkins.example.com/credentials/store/system/domain/_/createCredentials"
+```
+
+#### 修改凭据
+```bash
+# 1. 更新文件内容
+NEW_BASE64=$(base64 -w0 /tmp/new_secret.key)
+
+# 2. 生成更新后的 XML
+cat > updated.xml <<EOF
+<com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+  <scope>GLOBAL</scope>
+  <id>prod-ssl-key</id>
+  <description>Updated SSL Key</description>
+  <filepath>ssl_prod_v2.key</filepath>
+  <secretBytes>$NEW_BASE64</secretBytes>
+</com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+EOF
+
+# 3. 调用更新 API
+curl -X POST \
+  -u "admin:11abc22d33ef44gh55ij" \
+  -H "$CRUMB" \
+  -H "Content-Type: application/xml" \
+  -d @updated.xml \
+  "http://jenkins.example.com/credentials/store/system/domain/_/credential/prod-ssl-key/updateSubmit"
+```
+
+---
+
+通过以上步骤，即可完全通过 Jenkins API 管理 Secret File 凭据。
