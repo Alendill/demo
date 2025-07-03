@@ -123,3 +123,120 @@
 - 结合Seccomp、AppArmor、SELinux等安全模块，进一步增强容器的安全性，防止恶意行为。
 
 这些问题覆盖了Docker的核心概念、容器管理、镜像构建、网络和安全机制，以及高级应用场景，适合考察候选人在Docker环境下的架构设计和运维能力。
+
+
+
+
+如果有人声称他精通 Docker，那你可以通过以下多维度、高级别的问题来验证他是否真正掌握了容器技术的底层原理、使用技巧与最佳实践。以下是分类整理的Docker 面试问题，适合技术深度验证，也可以用作面试官提问清单：
+
+⸻
+
+🧱 一、Docker 架构与底层原理
+	1.	Docker 是如何工作的？简述其整体架构。
+	•	包括：Docker Client、Docker Daemon、镜像（Image）、容器（Container）、Registry、Storage Driver。
+	2.	Docker 使用的底层技术有哪些？
+	•	Linux namespaces（隔离）
+	•	cgroups（资源限制）
+	•	UnionFS（镜像分层）
+	•	seccomp、AppArmor、SELinux（安全）
+	3.	Docker 容器与虚拟机的本质区别是什么？
+	•	容器是进程级别的隔离，共享宿主内核；VM 模拟硬件、运行完整操作系统。
+	4.	Docker 是如何实现文件系统隔离的？
+	•	利用 Union File System 实现分层，支持 OverlayFS、aufs、btrfs、zfs 等。
+
+⸻
+
+🛠 二、镜像构建与优化
+	5.	你在生产环境中是如何构建和优化 Docker 镜像的？
+	•	精简基础镜像（如 alpine）
+	•	多阶段构建（Multi-stage）
+	•	减少层数和冗余命令
+	•	使用 .dockerignore 忽略无关文件
+	6.	镜像分层（Layer）机制是怎样的？如何影响构建效率？
+	•	每个 Dockerfile 指令产生一层；修改上层会使下层缓存失效。合理顺序能提升缓存命中率。
+	7.	如何从一个正在运行的容器生成镜像？
+	•	使用 docker commit，但不是最佳实践（不可重现）。
+
+⸻
+
+📦 三、容器运行与管理
+	8.	容器如何与宿主机共享网络和文件系统？有哪些方式？
+	•	网络模式：bridge、host、none、container
+	•	Volume：bind mount、named volume、tmpfs
+	9.	容器间通信有哪些方式？
+	•	Docker 默认通过自定义 bridge 网络 + DNS 实现容器间通信（服务名即 DNS 名）
+	•	也可以用 host 网络、overlay 网络（Swarm/跨主机）
+	10.	容器内时间不对怎么办？
+	•	挂载宿主的 /etc/localtime、/etc/timezone；或使用 TZ 环境变量。
+	11.	如何限制 Docker 容器的资源使用？
+	•	--memory、--cpus、--cpuset-cpus、--pids-limit 等参数。
+
+⸻
+
+🔒 四、安全性与隔离
+	12.	Docker 容器有哪些安全隐患？你是如何处理的？
+	•	特权模式（--privileged）风险大
+	•	宿主目录挂载风险
+	•	镜像漏洞（需定期扫描）
+	•	可用 tools：docker scan, trivy, grype
+	13.	如何防止容器逃逸攻击？
+	•	不使用特权容器；
+	•	限制宿主目录挂载；
+	•	使用 seccomp profile、AppArmor、SELinux。
+
+⸻
+
+🔁 五、镜像仓库与 CI/CD 集成
+	14.	你如何管理私有 Docker 镜像仓库？
+	•	使用 Harbor、Nexus、Artifactory、Docker Registry；配置认证与权限控制。
+	15.	你如何将 Docker 与 CI/CD 集成？
+	•	结合 GitLab CI、GitHub Actions、Jenkins、ArgoCD 等实现：
+	•	构建镜像
+	•	推送至 Registry
+	•	触发部署（K8s 或 Swarm）
+
+⸻
+
+🕵️ 六、调试与排错
+	16.	Docker 容器 crash 或运行异常，你如何排查？
+	•	docker logs
+	•	docker inspect
+	•	docker events
+	•	docker exec 进入容器排查
+	17.	docker exec、docker attach 和 docker logs 有什么区别？
+	•	exec: 启动新进程进入容器；
+	•	attach: 连接到主进程的 stdout/stderr；
+	•	logs: 查看日志，不进入容器。
+	18.	容器启动变慢，你会如何诊断？
+	•	容器镜像过大或层数过多；
+	•	容器启动脚本阻塞；
+	•	网络或 Volume 挂载慢；
+	•	使用 --log-level debug 查看 daemon 日志。
+
+⸻
+
+🚀 七、高级话题与实际经验
+	19.	生产中你遇到过哪些 Docker 相关的问题？你是如何解决的？
+	•	根据候选人经历挖掘真实问题，比如：
+	•	镜像升级回滚
+	•	容器日志暴涨
+	•	容器端口冲突
+	•	数据卷丢失
+	20.	你在实际项目中如何使用 Docker Compose 或 Kubernetes？为什么选择它？
+	•	是否了解 Compose 的服务编排、依赖定义；
+	•	是否能区分 Compose vs K8s 的适用场景；
+	•	是否能从 Compose 快速迁移到 K8s。
+
+⸻
+
+✅ 面试建议
+
+如果对方真的精通 Docker，他应当能：
+	•	熟练写出 Dockerfile 并解释每一行的作用
+	•	掌握镜像分层优化与缓存机制
+	•	了解容器原理（namespace, cgroups）
+	•	能在生产环境解决容器相关故障
+	•	对 Docker 安全机制有系统理解
+	•	了解 Docker 与 CI/CD、K8s 的整合
+
+如需，我也可以把这些题目整理为标准化的评分卡或结构化面试模板。是否需要？
