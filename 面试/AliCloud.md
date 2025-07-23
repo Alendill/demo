@@ -191,3 +191,143 @@
 	•	与公有云的 API 对齐与定制化问题处理
 
 我也可以为你整理成一份 Word / PDF / Excel 面试题文档或打分卡。是否需要我进一步分类整理？
+
+
+好的！以下是带参考答案的 20 道阿里云 ACK 面试题（含答案要点）：
+
+⸻
+
+✅ 一、ACK 基础与架构
+	1.	什么是阿里云 ACK？它相比原生 Kubernetes 有哪些增强？
+答案要点：
+	•	ACK 是阿里云托管的 Kubernetes 服务，兼容原生 K8s。
+	•	提供一键部署、托管控制面、自动升级。
+	•	集成阿里云安全（RAM、VPC、SLB）、可观测性（ARMS、SLS）等服务。
+	2.	ACK 控制面是如何托管的？用户是否可以访问？
+答案要点：
+	•	控制面托管在阿里云，自动维护、免运维。
+	•	用户无法 SSH 登录控制面，仅可通过 kubeconfig 与 API Server 交互。
+	3.	ACK 支持哪些网络插件？分别适用于哪些场景？
+答案要点：
+	•	Terway（推荐）：基于 ENI，支持 VPC 原生 IP、安全组隔离。
+	•	Flannel：开源、轻量，适合测试或非隔离场景。
+	4.	ACK 如何实现多租户隔离？
+答案要点：
+	•	Namespace + RBAC + NetworkPolicy 实现逻辑隔离；
+	•	配合 Terway 实现物理层安全隔离（安全组）；
+	•	支持企业空间（企业版）进行组织级别划分。
+	5.	在 ACK 中如何配置弹性伸缩？
+答案要点：
+	•	Pod 自动扩缩容使用 HPA。
+	•	节点层面使用 Cluster Autoscaler，自动添加或移除 ECS 实例。
+	•	可与阿里云弹性伸缩（ESS）绑定实现定时或事件触发伸缩。
+
+⸻
+
+✅ 二、可观测性与安全
+	6.	ACK 如何实现容器日志采集与分析？
+答案要点：
+	•	使用 Logtail 作为容器内代理。
+	•	配置采集规则将日志投递到阿里云日志服务（SLS）或第三方（如 ELK）。
+	•	可进行实时查询、告警、存档。
+	7.	在 ACK 中如何查看容器的运行指标？
+答案要点：
+	•	默认集成 Prometheus（或 ARMS Prometheus 版）。
+	•	Grafana 展示 CPU、内存、网络等监控图表。
+	•	可采集 Pod、Node、Ingress、Application 层指标。
+	8.	ACK 如何进行审计与权限控制？
+答案要点：
+	•	使用 RAM 控制用户对 ACK 控制面的访问权限。
+	•	集群内部通过 RBAC 实现对 Namespace / API 的控制。
+	•	支持 CloudTrail 对操作日志进行审计。
+	9.	ACK 中如何防止镜像漏洞和不合规镜像？
+答案要点：
+	•	配置容器镜像服务（ACR）的漏洞扫描功能；
+	•	使用 ACR 策略禁止拉取未签名/不合规镜像；
+	•	支持镜像签名（Notary v2）。
+	10.	如何在 ACK 中实现网络层安全隔离？
+答案要点：
+	•	使用 Terway 时可通过安全组控制 Pod 网络访问；
+	•	配置 Kubernetes 的 NetworkPolicy 精细控制服务间流量；
+	•	可结合服务网格 ASM 实现零信任流控。
+
+⸻
+
+✅ 三、CI/CD 与镜像管理
+	11.	ACK 如何对接 Jenkins 实现自动部署？
+答案要点：
+
+	•	使用 Jenkins K8s Plugin 创建构建 Pod。
+	•	构建后将镜像推送到 ACR。
+	•	自动更新 K8s Deployment（可通过 Helm 或 Kustomize）。
+
+	12.	如何在 ACK 中使用 GitOps？
+答案要点：
+
+	•	使用 ArgoCD 或 FluxCD；
+	•	Git Repo 作为部署配置源；
+	•	自动同步 Git 中的 YAML/Helm 文件到集群。
+
+	13.	ACK 中如何安全拉取私有镜像？
+答案要点：
+
+	•	创建类型为 dockerconfigjson 的 Secret；
+	•	Pod spec 中添加 imagePullSecrets 字段引用该 Secret。
+	•	支持与 ACR 实现自动认证（ACK 与 ACR 在同一账号下）。
+
+	14.	如何在 ACK 中进行蓝绿/金丝雀发布？
+答案要点：
+
+	•	蓝绿：使用两个 Deployment + Ingress 切换流量。
+	•	金丝雀：使用 Istio 或 ASM 实现流量百分比分配；逐步推广新版本。
+
+	15.	如何在 ACK 中使用 Helm？
+答案要点：
+
+	•	安装 Helm CLI 或通过 ArgoCD 使用 Helm chart。
+	•	Helm Repo 可托管在 ChartMuseum 或 ACR。
+	•	Chart 支持配置、打包、版本管理，方便发布。
+
+⸻
+
+✅ 四、架构实战与扩展能力
+	16.	如何在 ACK 中部署有状态服务（如 MySQL、Kafka）？
+答案要点：
+
+	•	使用 StatefulSet + Headless Service；
+	•	每个 Pod 绑定唯一 PVC；
+	•	存储使用阿里云云盘或 NAS 持久化。
+
+	17.	ACK 集群容量不足导致调度失败，你如何排查？
+答案要点：
+
+	•	查看节点资源是否足够（kubectl describe node）；
+	•	检查 Pod 网络是否耗尽（ENI 数限制）；
+	•	确认调度策略（亲和性、Taint、PodSpec 限制）；
+	•	启用 Cluster Autoscaler 自动扩容。
+
+	18.	如何将阿里云 OSS 作为容器挂载存储使用？
+答案要点：
+
+	•	安装 OSS CSI 插件（Cloud Controller 插件）
+	•	配置 StorageClass 为 OSS 类型；
+	•	使用 PVC 将 OSS 目录挂载到容器中。
+
+	19.	什么是 ECI？它在 ACK 中适合哪些应用场景？
+答案要点：
+
+	•	ECI 是阿里云弹性容器实例，免运维、按量计费；
+	•	适合 Job、突发任务、流量高峰自动扩展；
+	•	与 ACK 集成后可通过虚拟节点调度。
+
+	20.	如何使用 ASM 为 ACK 集群提供服务网格能力？
+答案要点：
+
+	•	将 ACK 纳入 ASM 注册；
+	•	注入 Sidecar 实现服务通信、观测、熔断、重试等能力；
+	•	使用控制台或 CRD 管理服务路由、证书、监控指标。
+
+⸻
+
+如果你需要将这些题目整理成一份可打印面试题册（PDF 或 Excel），我可以帮你格式化输出，是否需要我生成？你还希望加入打分标准吗？
+
